@@ -11,7 +11,7 @@ import (
 
 type InteractionRepository interface {
 	Create(product dto.Interaction) (dto.Interaction, error)
-	RecentInteractions(user, limit int) ([]dto.Interaction, error)
+	RecentInteractions(user, limit uint) ([]dto.Interaction, error)
 }
 
 type interactionRepository struct {
@@ -24,11 +24,11 @@ func NewInteractionRepository() InteractionRepository {
 	}
 }
 
-func (r *interactionRepository) RecentInteractions(user, limit int) ([]dto.Interaction, error) {
+func (r *interactionRepository) RecentInteractions(user, limit uint) ([]dto.Interaction, error) {
 
 	// Get user's recent interactions
 	var recentInteractions []dto.Interaction
-	if err := r.db.Where("user = ?", user).Order("created_at desc").Limit(limit).Find(&recentInteractions).Error; err != nil {
+	if err := r.db.Where("user_id = ?", user).Order("created_at desc").Limit(int(limit)).Find(&recentInteractions).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return recentInteractions, ErrRecordNotFound
 		}

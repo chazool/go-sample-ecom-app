@@ -13,6 +13,7 @@ var (
 
 type InteractionService interface {
 	Create(interaction dto.Interaction) (dto.Interaction, error)
+	GetRecentInteractions(user, limit uint) ([]dto.Interaction, error)
 }
 
 type interactionService struct {
@@ -25,7 +26,7 @@ func NewInteractionService() InteractionService {
 	}
 }
 
-func (service *interactionService) RecentInteractions(user, limit int) ([]dto.Interaction, error) {
+func (service *interactionService) GetRecentInteractions(user, limit uint) ([]dto.Interaction, error) {
 
 	log.Printf("Retrieving interaction with user %d\n", user)
 

@@ -10,30 +10,40 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/mitchellh/mapstructure"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	ErrInvalidCredentials  = errors.New("invalid credentials")
-	ErrFailToGenerateToken = errors.New("failed to generate token")
-	ErrUserAlreadyExists   = errors.New("user with the same email already exists")
-	ErrFailToHashPassword  = errors.New("failed to hash password")
-	ErrFailCreateUser      = errors.New("failed to create user record")
-	ErrFailGenerateToken   = errors.New("failed to generate token")
-	ErrFailToPassToken     = errors.New("failed to parse token")
-	ErrInvalidToken        = errors.New("invalid token")
-	ErrMissingAuthHeader   = errors.New("missing Authorization header")
-	ErrInvalidAuthHeader   = errors.New("invalid Authorization header")
+	ErrInvalidCredentials     = errors.New("invalid credentials")
+	ErrFailToGenerateToken    = errors.New("failed to generate token")
+	ErrUserAlreadyExists      = errors.New("user with the same email already exists")
+	ErrFailToHashPassword     = errors.New("failed to hash password")
+	ErrFailCreateUser         = errors.New("failed to create user record")
+	ErrFailGenerateToken      = errors.New("failed to generate token")
+	ErrFailToPassToken        = errors.New("failed to parse token")
+	ErrInvalidToken           = errors.New("invalid token")
+	ErrMissingAuthHeader      = errors.New("missing Authorization header")
+	ErrInvalidAuthHeader      = errors.New("invalid Authorization header")
+	ErrUnauthorizedAuthHeader = errors.New("unauthorized request")
+)
+
+type RequestType string
+
+const (
+	ReqSearch   RequestType = "search"
+	ReqCreate   RequestType = "create"
+	ReqRegAdmin RequestType = "reg_admin"
 )
 
 type AuthService interface {
 	Register(user dto.User) (string, error)
 	Login(email, password string) (string, error)
-	ParseToken(authHeader string) (dto.User, error)
+	ParseToken(authHeader string, reqType RequestType) (dto.User, error)
 	hashPassword(password string) (string, error)
 	verifyPassword(userPassword string, reqPassword string) error
-	generateToken(userID uint) (string, error)
-	verifyToken(token string) (uint, error)
+	generateToken(user dto.User) (string, error)
+	verifyToken(token string) (dto.UserRole, error)
 }
 
 type authService struct {
@@ -61,7 +71,7 @@ func (service *authService) Login(email, password string) (string, error) {
 	}
 
 	// Generate JWT token
-	token, err := service.generateToken(user.ID)
+	token, err := service.generateToken(user)
 	if err != nil {
 		return "", ErrFailToGenerateToken
 	}
@@ -107,7 +117,7 @@ func (service *authService) Register(user dto.User) (string, error) {
 	}
 
 	// Generate JWT token
-	token, err := service.generateToken(user.ID)
+	token, err := service.generateToken(user)
 	if err != nil {
 		return "", ErrFailGenerateToken
 	}
@@ -115,7 +125,7 @@ func (service *authService) Register(user dto.User) (string, error) {
 	return token, nil
 }
 
-func (service *authService) ParseToken(authHeader string) (dto.User, error) {
+func (service *authService) ParseToken(authHeader string, requestType RequestType) (dto.User, error) {
 
 	var user dto.User
 	if authHeader == "" {
@@ -129,12 +139,23 @@ func (service *authService) ParseToken(authHeader string) (dto.User, error) {
 
 	tokenString := parts[1]
 
-	userID, err := service.verifyToken(tokenString)
+	userRole, err := service.verifyToken(tokenString)
 	if err != nil {
 		return user, err
 	}
 
-	user, err = service.userRepo.FindById(int(userID))
+	switch requestType {
+	case ReqSearch:
+		if userRole.Role == dto.RoleSystem {
+			return user, ErrUnauthorizedAuthHeader
+		}
+	case ReqCreate:
+		if userRole.Role != dto.RoleAdmin {
+			return user, ErrUnauthorizedAuthHeader
+		}
+	}
+
+	user, err = service.userRepo.FindById(int(userRole.ID))
 	if err != nil {
 		return user, ErrInvalidToken
 	}
@@ -159,11 +180,15 @@ func (service *authService) hashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func (service *authService) generateToken(userID uint) (string, error) {
+func (service *authService) generateToken(user dto.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = userID
+
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["sub"] = dto.UserRole{
+		ID:   user.ID,
+		Role: user.Role,
+	}
 
 	tokenString, err := token.SignedString([]byte("secret"))
 	if err != nil {
@@ -172,8 +197,8 @@ func (service *authService) generateToken(userID uint) (string, error) {
 	return tokenString, nil
 }
 
-func (service *authService) verifyToken(reqToken string) (uint, error) {
-
+func (service *authService) verifyToken(reqToken string) (dto.UserRole, error) {
+	var user dto.UserRole
 	token, err := jwt.Parse(reqToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -182,17 +207,18 @@ func (service *authService) verifyToken(reqToken string) (uint, error) {
 	})
 
 	if err != nil {
-		return 0, ErrFailToPassToken
+		return user, ErrFailToPassToken
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID, ok := claims["sub"].(float64)
+		userData, ok := claims["sub"]
 		if !ok {
-			return 0, ErrInvalidToken
+			return user, ErrInvalidToken
 		}
 
-		return uint(userID), nil
+		mapstructure.Decode(userData, &user)
+		return user, nil
 	}
 
-	return 0, ErrInvalidToken
+	return user, ErrInvalidToken
 }

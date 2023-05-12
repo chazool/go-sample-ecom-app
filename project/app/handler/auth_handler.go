@@ -76,10 +76,38 @@ func (h *AuthHandler) login(c *fiber.Ctx) error {
 
 }
 
-// middleware for user authentication
-func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
+// // middleware for user authentication
+// func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
 
-	user, err := h.authService.ParseToken(c.Get("Authorization"))
+// 	user, err := h.authService.ParseToken(c.Get("Authorization"), services.ReqRegAdmin)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusUnauthorized).JSON(dto.Response{
+// 			Message: err.Error(),
+// 		})
+// 	}
+
+// 	c.Locals("user", &user)
+// 	return c.Next()
+// }
+
+// middleware for user authentication
+func (h *AuthHandler) searchAuthenticationMiddleware(c *fiber.Ctx) error {
+
+	user, err := h.authService.ParseToken(c.Get("Authorization"), services.ReqSearch)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(dto.Response{
+			Message: err.Error(),
+		})
+	}
+
+	c.Locals("user", &user)
+	return c.Next()
+}
+
+// middleware for user authentication
+func (h *AuthHandler) createAuthenticationMiddleware(c *fiber.Ctx) error {
+
+	user, err := h.authService.ParseToken(c.Get("Authorization"), services.ReqCreate)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(dto.Response{
 			Message: err.Error(),

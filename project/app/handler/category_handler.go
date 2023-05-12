@@ -59,7 +59,7 @@ func (h *CategoryHandler) getCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	category, err := h.categoryService.FindById(id)
+	category, err := h.categoryService.FindById(uint(id))
 	if err != nil {
 		// Log the error
 		log.Printf("Error retrieving category: %v", err)

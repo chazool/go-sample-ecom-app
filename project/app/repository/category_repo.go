@@ -11,7 +11,7 @@ import (
 
 type CategoryRepository interface {
 	Create(category dto.Category) (dto.Category, error)
-	FindById(id int) (dto.Category, error)
+	FindById(id uint) (dto.Category, error)
 	FindAll() ([]dto.Category, error)
 }
 
@@ -34,7 +34,7 @@ func (r *categoryRepository) Create(category dto.Category) (dto.Category, error)
 	return category, nil
 }
 
-func (r *categoryRepository) FindById(id int) (dto.Category, error) {
+func (r *categoryRepository) FindById(id uint) (dto.Category, error) {
 	var category dto.Category
 	result := r.db.First(&category, id)
 	if result.Error != nil {

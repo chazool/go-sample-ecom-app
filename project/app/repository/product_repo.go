@@ -15,9 +15,9 @@ var ErrFailedToFindProduct = errors.New("failed to find product")
 type ProductRepository interface {
 	Create(product dto.Product) (dto.Product, error)
 	Delete(product dto.Product) error
-	FindById(id int) (dto.Product, error)
+	FindById(id uint) (dto.Product, error)
 	FindAll() ([]dto.Product, error)
-	UpdateInteractions(productID uint, interactions uint) error
+	UpdateInteractions(productID, interactions uint) error
 }
 
 type productRepository struct {
@@ -39,7 +39,7 @@ func (r *productRepository) Delete(product dto.Product) error {
 	return nil
 }
 
-func (r *productRepository) FindById(id int) (dto.Product, error) {
+func (r *productRepository) FindById(id uint) (dto.Product, error) {
 	var product dto.Product
 	result := r.db.First(&product, id)
 	if result.Error != nil {
@@ -71,7 +71,7 @@ func (r *productRepository) Create(product dto.Product) (dto.Product, error) {
 	return product, nil
 }
 
-func (r *productRepository) UpdateInteractions(productID uint, interactions uint) error {
+func (r *productRepository) UpdateInteractions(productID, interactions uint) error {
 	result := r.db.Model(&dto.Product{}).Where("id = ?", productID).Updates(map[string]interface{}{
 		"interactions": interactions,
 	})

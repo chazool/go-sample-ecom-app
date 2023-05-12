@@ -11,12 +11,12 @@ func RegisterRoutes(app *fiber.App) {
 
 	// register the authentication routes
 	auth := app.Group("/auth")
-	auth.Post("/login", authHandler.login)
+	app.Post("/login", authHandler.login)
 	auth.Post("/register", authHandler.register)
 
 	// management routes
 	manage := app.Group("/manage")
-	manage.Use(authHandler.authenticationMiddleware) // require authentication for manage routes
+	manage.Use(authHandler.createAuthenticationMiddleware)
 
 	// manage products
 	manageProduct := manage.Group("/product")
@@ -29,9 +29,10 @@ func RegisterRoutes(app *fiber.App) {
 
 	// searching routes
 	search := app.Group("/search")
-	search.Use(authHandler.authenticationMiddleware) // require authentication for search routes
+	search.Use(authHandler.searchAuthenticationMiddleware)
 	// search product
 	searchProduct := search.Group("/product")
+	searchProduct.Get("/recommendation", productHandler.getRecommendations)
 	searchProduct.Get("/", productHandler.getProducts)
 	searchProduct.Get("/:id", productHandler.getProduct)
 
@@ -40,9 +41,4 @@ func RegisterRoutes(app *fiber.App) {
 	searCategory.Get("/", categoryHandler.getCategories)
 	searCategory.Get("/:id", categoryHandler.getCategory)
 
-	// register the tracking routes
-	app.Post("/track", track)
-
-	// register the recommendation routes
-	//app.Get("/recommendation/:id", getRecommendations)
 }

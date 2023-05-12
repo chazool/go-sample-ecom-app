@@ -17,7 +17,7 @@ var (
 
 type CategoryService interface {
 	Create(category dto.Category) (dto.Category, error)
-	FindById(id int) (dto.Category, error)
+	FindById(id uint) (dto.Category, error)
 	FindAll() ([]dto.Category, error)
 }
 
@@ -31,7 +31,7 @@ func NewCategoryService() CategoryService {
 	}
 }
 
-func (service *categoryService) FindById(id int) (dto.Category, error) {
+func (service *categoryService) FindById(id uint) (dto.Category, error) {
 
 	log.Printf("Retrieving category with ID %d\n", id)
 
