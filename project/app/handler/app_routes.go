@@ -16,7 +16,7 @@ func RegisterRoutes(app *fiber.App) {
 
 	// management routes
 	manage := app.Group("/manage")
-	manage.Use(authHandler.authenticationMiddleware) // require authentication for product routes
+	manage.Use(authHandler.authenticationMiddleware) // require authentication for manage routes
 
 	// manage products
 	manageProduct := manage.Group("/product")
@@ -29,7 +29,7 @@ func RegisterRoutes(app *fiber.App) {
 
 	// searching routes
 	search := app.Group("/search")
-
+	search.Use(authHandler.authenticationMiddleware) // require authentication for search routes
 	// search product
 	searchProduct := search.Group("/product")
 	searchProduct.Get("/", productHandler.getProducts)

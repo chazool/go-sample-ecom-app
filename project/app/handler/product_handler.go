@@ -87,6 +87,9 @@ func (h *ProductHandler) getProduct(c *fiber.Ctx) error {
 	// Log the incoming request
 	log.Printf("Received get product request for ID: %v", c.Params("id"))
 
+	// Get the authenticated user from the context
+	user := c.Locals("user").(*dto.User)
+
 	// Get product ID from request params
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -97,7 +100,7 @@ func (h *ProductHandler) getProduct(c *fiber.Ctx) error {
 		})
 	}
 
-	product, err := h.productService.FindById(id)
+	product, err := h.productService.FindByIdWithInteract(id, int(user.ID))
 	if err != nil {
 		// Log the error
 		log.Printf("Error retrieving product: %v", err)

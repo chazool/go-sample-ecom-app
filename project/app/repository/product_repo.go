@@ -10,13 +10,14 @@ import (
 )
 
 var ErrRecordNotFound = errors.New("record not found")
-var ErrFailedToFindProduct = errors.New("Failed to find product")
+var ErrFailedToFindProduct = errors.New("failed to find product")
 
 type ProductRepository interface {
 	Create(product dto.Product) (dto.Product, error)
 	Delete(product dto.Product) error
 	FindById(id int) (dto.Product, error)
 	FindAll() ([]dto.Product, error)
+	UpdateInteractions(productID uint, interactions uint) error
 }
 
 type productRepository struct {
@@ -68,4 +69,17 @@ func (r *productRepository) Create(product dto.Product) (dto.Product, error) {
 	}
 	log.Printf("Created product: %+v", product)
 	return product, nil
+}
+
+func (r *productRepository) UpdateInteractions(productID uint, interactions uint) error {
+	result := r.db.Model(&dto.Product{}).Where("id = ?", productID).Updates(map[string]interface{}{
+		"interactions": interactions,
+	})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

@@ -86,6 +86,6 @@ func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
 		})
 	}
 
-	c.Locals("user", user)
+	c.Locals("user", &user)
 	return c.Next()
 }

@@ -101,7 +101,7 @@ func (service *authService) Register(user dto.User) (string, error) {
 
 	// Create the user record
 	user.Password = hashedPassword
-	_, err = service.userRepo.Create(user)
+	user, err = service.userRepo.Create(user)
 	if err != nil {
 		return "", ErrFailCreateUser
 	}

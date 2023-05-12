@@ -15,7 +15,7 @@ func GetDBConnection() *gorm.DB {
 
 // create a new connection to the database
 func InitDBConnection() error {
-	dsn := "host=localhost user=postgres password=postgres dbname=sample_app port=5432 sslmode=disable"
+	dsn := "host=localhost user=postgres password=postgres dbname=sample_app_db port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -23,7 +23,7 @@ func InitDBConnection() error {
 	}
 
 	// migrate the models to the database
-	db.AutoMigrate(&dto.Product{}, &dto.User{})
+	db.AutoMigrate(&dto.Category{}, &dto.Product{}, &dto.User{}, &dto.Interaction{})
 
 	dbCon = db
 	return nil
