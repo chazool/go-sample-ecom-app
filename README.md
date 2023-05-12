@@ -60,45 +60,6 @@ The following routes are available:
 The database structure is defined using DBML. Here is a summary:
 https://dbdiagram.io/d/645e5141dca9fb07c4fbdba0
 
-```
-Table Category {
-  id uint [pk]
-  name string [not null]
-}
-
-Table Product {
-  id uint [pk]
-  name string [not null]
-  description string [not null]
-  price float [not null]
-  category_id uint [not null]
-  interactions uint
-  weighted_score float
-}
-
-Table Interaction {
-  id uint [pk]
-  user_id uint
-  product_id uint
-  category_id uint
-}
-
-Table User {
-  id uint [pk]
-  name string [not null]
-  email string [not null]
-  password string [not null]
-  role string [not null]
-}
-
-Ref: Product.category_id > Category.id
-Ref: Interaction.user_id > User.id
-Ref: Interaction.product_id > Product.id
-Ref: Interaction.category_id > Category.id
-Ref: User.id < interactions.user_id
-Ref: Product.id < interactions.product_id
-``` 
-
 ## Technologies Used
 
 - Golang

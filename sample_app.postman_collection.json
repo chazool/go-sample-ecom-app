@@ -1,0 +1,385 @@
+{
+	"info": {
+		"_postman_id": "c7c7c7a9-9d21-46d9-ba9a-ce5ceaac6dbd",
+		"name": "sample_app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9362259"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "Register a new user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODc2OTcsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.SSfQUhqTBR27kTl21lWwHLVSiCKVD6fAsJQ0_gWTnrI",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"chazool kaweesha\",\r\n  \"email\": \"chazool@test.co,m\",\r\n  \"password\": \"chazool\",\r\n  \"role\": \"user\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8181/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8181",
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login as a user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODcxODksInN1YiI6eyJJRCI6MiwiUm9sZSI6InN5c3RlbSJ9fQ.h8ES9kg47VK1r8s_PsK5UA_9vUp2_O9zqr7Mant8nzI",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"chazool@test.com\",\r\n  \"password\": \"chazool\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8181/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8181",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "manage",
+			"item": [
+				{
+					"name": "product",
+					"item": [
+						{
+							"name": "Create a new product",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODgyNTgsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.m3ob879Qb9Ux8qzWdJx6u_2quqRtTFKpJuSVagIWPMs",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Product 1\",\r\n  \"description\": \"This is the first product.\",\r\n  \"price\": 9.99,\r\n  \"categoryID\": 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8181/manage/product",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"manage",
+										"product"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a product by id",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODgyNTgsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.m3ob879Qb9Ux8qzWdJx6u_2quqRtTFKpJuSVagIWPMs",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8181/manage/product/2",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"manage",
+										"product",
+										"2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "category",
+					"item": [
+						{
+							"name": "Create a new category",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODgyNTgsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.m3ob879Qb9Ux8qzWdJx6u_2quqRtTFKpJuSVagIWPMs",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"category 1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8181/manage/category",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"manage",
+										"category"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "search",
+			"item": [
+				{
+					"name": "product",
+					"item": [
+						{
+							"name": "Retrieve all products",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODgyNTgsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.m3ob879Qb9Ux8qzWdJx6u_2quqRtTFKpJuSVagIWPMs",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8181/search/product",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"search",
+										"product"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Product recommendations",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODgyNTgsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.m3ob879Qb9Ux8qzWdJx6u_2quqRtTFKpJuSVagIWPMs",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8181/search/product/recommendation",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"search",
+										"product",
+										"recommendation"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Retrieve product by id",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5ODgyNTgsInN1YiI6eyJJRCI6MSwiUm9sZSI6ImFkbWluIn19.m3ob879Qb9Ux8qzWdJx6u_2quqRtTFKpJuSVagIWPMs",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8181/search/product/3",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"search",
+										"product",
+										"3"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "category",
+					"item": [
+						{
+							"name": "Retrieve all categoryes",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM5MDAxMTAsInN1YiI6Mn0.v8rhat65si2w-oVCxgnmmK6BNtPf5eCzTK44tSgflMY",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8181/search/category",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"search",
+										"category"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Retrieve category by id",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": " application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODM4NjcyNDQsInN1YiI6MX0.q9UGu5nuKpVenU2C60N95ike5uN6ohKcQVfSC-I23hk",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8181/search/category/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8181",
+									"path": [
+										"search",
+										"category",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}
