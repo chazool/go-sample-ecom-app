@@ -136,7 +136,7 @@ func (service *authService) ParseToken(authHeader string) (dto.User, error) {
 
 	user, err = service.userRepo.FindById(int(userID))
 	if err != nil {
-		return user, err
+		return user, ErrInvalidToken
 	}
 
 	return user, nil

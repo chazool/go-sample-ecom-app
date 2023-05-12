@@ -51,12 +51,6 @@ func (h *AuthHandler) register(c *fiber.Ctx) error {
 // handle user authentication
 func (h *AuthHandler) login(c *fiber.Ctx) error {
 
-	// parse the request body
-	// var req struct {
-	// 	Email    string `json:"email"`
-	// 	Password string `json:"password"`
-	// }
-
 	var user dto.User
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.Response{
@@ -95,72 +89,3 @@ func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
 	c.Locals("user", user)
 	return c.Next()
 }
-
-/*
-func authenticationMiddleware(c *fiber.Ctx) error {
-
-	var dbcon *gorm.DB = db.GetDBConnection()
-
-	// get the Authorization header
-	authHeader := c.Get("Authorization")
-	if authHeader == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "missing Authorization header",
-		})
-	}
-
-	// extract the JWT token from the header
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "invalid Authorization header",
-		})
-	}
-	tokenString := parts[1]
-
-	// parse the JWT token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte("secret"), nil // replace with your JWT secret
-	})
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "failed to parse token",
-		})
-	}
-
-	// verify the JWT token
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID, ok := claims["sub"].(float64)
-		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "invalid token",
-			})
-		}
-
-		// check if the user exists
-		var user dto.User
-		if err := dbcon.First(&user, uint(userID)).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"message": "invalid token",
-				})
-			}
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "failed to retrieve user",
-			})
-		}
-
-		// set the user context
-		c.Locals("user", user)
-
-		return c.Next()
-	}
-
-	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-		"message": "invalid token",
-	})
-}
-*/

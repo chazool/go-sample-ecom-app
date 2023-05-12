@@ -5,6 +5,7 @@ import "github.com/gofiber/fiber/v2"
 // register the routes for the application
 func RegisterRoutes(app *fiber.App) {
 
+	categoryHandler := NewCategoryHandler()
 	productHandler := NewProductHandler()
 	authHandler := NewAuthHandler()
 
@@ -13,13 +14,31 @@ func RegisterRoutes(app *fiber.App) {
 	auth.Post("/login", authHandler.login)
 	auth.Post("/register", authHandler.register)
 
-	// register the product routes
-	product := app.Group("/product")
-	product.Use(authHandler.authenticationMiddleware) // require authentication for product routes
-	product.Post("/", productHandler.createProduct)
-	product.Get("/", productHandler.getProducts)
-	product.Get("/:id", productHandler.getProduct)
-	product.Delete("/:id", productHandler.deleteProduct)
+	// management routes
+	manage := app.Group("/manage")
+	manage.Use(authHandler.authenticationMiddleware) // require authentication for product routes
+
+	// manage products
+	manageProduct := manage.Group("/product")
+	manageProduct.Post("/", productHandler.createProduct)
+	manageProduct.Delete("/:id", productHandler.deleteProduct)
+
+	// manage category
+	manageCategory := manage.Group("/category")
+	manageCategory.Post("/", categoryHandler.createCategory)
+
+	// searching routes
+	search := app.Group("/search")
+
+	// search product
+	searchProduct := search.Group("/product")
+	searchProduct.Get("/", productHandler.getProducts)
+	searchProduct.Get("/:id", productHandler.getProduct)
+
+	// search category
+	searCategory := search.Group("/category")
+	searCategory.Get("/", categoryHandler.getCategories)
+	searCategory.Get("/:id", categoryHandler.getCategory)
 
 	// register the tracking routes
 	app.Post("/track", track)
