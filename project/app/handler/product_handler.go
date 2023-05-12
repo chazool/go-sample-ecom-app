@@ -1,174 +1,156 @@
 package handler
 
 import (
+	"errors"
+	"log"
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
+
+	"sample_app/app/dto"
+	"sample_app/app/services"
 )
 
-// handle product creation
-// func createProduct(c *fiber.Ctx) error {
-// 	var dbcon *gorm.DB = db.GetDBConnection()
+type ProductHandler struct {
+	productService services.ProductService
+}
 
-// 	// Parse request body
-// 	var product dto.Product
-// 	if err := c.BodyParser(&product); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": "invalid request",
-// 		})
-// 	}
+func NewProductHandler() ProductHandler {
+	return ProductHandler{
+		productService: services.NewProductService(),
+	}
+}
 
-// 	// Create the product record
-// 	if err := dbcon.Create(&product).Error; err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"message": "failed to create product record",
-// 		})
-// 	}
+// handle product deletion
+func (h *ProductHandler) deleteProduct(c *fiber.Ctx) error {
+	// Log the incoming request
+	log.Printf("Received delete request for product ID: %v", c.Params("id"))
 
-// 	return c.JSON(fiber.Map{
-// 		"message": "product created successfully",
-// 		"product": product,
-// 	})
-// }
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		// Log the error
+		log.Printf("Error parsing product ID: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid product ID",
+		})
+	}
+
+	err = h.productService.Delete(id)
+	if err != nil {
+		if errors.Is(err, services.ErrProductNotFound) {
+			// Log the error
+			log.Printf("Product not found: %v", err)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": services.ErrProductNotFound.Error(),
+			})
+		}
+		// Log the error
+		log.Printf("Error deleting product: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	// Log the success message
+	log.Printf("Product with ID %v deleted successfully", id)
+
+	return c.JSON(dto.Response{
+		Message: "Product deleted successfully",
+	})
+}
 
 // handle product retrieval
-// func getProducts1(c *fiber.Ctx) error {
-// 	var dbcon *gorm.DB = db.GetDBConnection()
+func (h *ProductHandler) getProducts(c *fiber.Ctx) error {
 
-// 	var products []dto.Product
+	// Log the incoming request
+	log.Println("Received get all products request")
 
-// 	// Retrieve all products from the database
-// 	if err := dbcon.Find(&products).Error; err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"message": "failed to retrieve products",
-// 		})
-// 	}
-
-// 	return c.JSON(products)
-// }
-
-// handle individual product retrieval
-// func getProduct(c *fiber.Ctx) error {
-// 	// TODO: implement individual product retrieval
-// 	return nil
-// }
-
-// func getProduct(c *fiber.Ctx) error {
-
-// 	var dbcon *gorm.DB = db.GetDBConnection()
-
-// 	// Get product ID from request params
-// 	id := c.Params("id")
-
-// 	// Retrieve the product with the given ID from the database
-// 	var product dto.Product
-// 	if err := dbcon.Where("id = ?", id).First(&product).Error; err != nil {
-// 		if err == gorm.ErrRecordNotFound {
-// 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-// 				"message": "product not found",
-// 			})
-// 		}
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"message": "failed to retrieve product",
-// 		})
-// 	}
-
-// 	// // Retrieve the top 5 related products using the recommendation algorithm
-// 	// var relatedProducts []dto.Product
-// 	// // TODO: implement recommendation algorithm to retrieve related products
-
-// 	// // Add the related products to the product object
-// 	// product.RelatedProducts = relatedProducts
-
-// 	return c.JSON(product)
-// }
-
-// handle tracking of user behavior
-func track(c *fiber.Ctx) error {
-	// TODO: implement tracking of user behavior
-	return nil
-}
-
-// register the tracking routes
-//app.Post("/track", track)
-//handle recommendation retrieval
-// func getRecommendations(c *fiber.Ctx) error {
-// 	// TODO: implement recommendation retrieval
-// 	return nil
-// }
-
-/*
-func getRecommendations(c *fiber.Ctx) error {
-	// Get user ID from context
-	userID := c.Locals("userID").(uint)
-
-	// Get user's recent interactions
-	var recentInteractions []dto.Interaction
-	if err := db.Where("user_id = ?", userID).Order("created_at desc").Limit(10).Find(&recentInteractions).Error; err != nil {
-		return err
+	products, err := h.productService.FindAll()
+	if err != nil {
+		// Log the error
+		log.Printf("Error retrieving products: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
 	}
 
-	// Group interactions by product ID
-	interactionsByProduct := make(map[uint][]dto.Interaction)
-	for _, interaction := range recentInteractions {
-		interactionsByProduct[interaction.ProductID] = append(interactionsByProduct[interaction.ProductID], interaction)
-	}
+	// Log the success message
+	log.Printf("Found %v products", len(products))
 
-	// Calculate weighted scores for each product
-	productWeights := make(map[uint]float64)
-	for productID, interactions := range interactionsByProduct {
-		var totalInteractions int
-		var inCategoryInteractions int
-		var categoryID uint
-
-		// Get product details
-		var product dto.Product
-		if err := db.First(&product, productID).Error; err != nil {
-			continue
-		}
-
-		// Get category details
-		var category dto.Category
-		if err := db.First(&category, product.ID).Error; err != nil {
-			continue
-		}
-		categoryID = category.ID
-
-		// Calculate number of interactions and interactions within category
-		for _, interaction := range interactions {
-			totalInteractions++
-			if interaction.CategoryID == categoryID {
-				inCategoryInteractions++
-			}
-		}
-
-		// Calculate weighted score based on number of interactions and interactions within category
-		if totalInteractions > 0 {
-			multiplier := float64(inCategoryInteractions) / float64(totalInteractions)
-			weightedScore := float64(product.Interactions) * multiplier
-			productWeights[productID] = weightedScore
-		}
-	}
-
-	// Sort products by weighted score
-	var products []dto.Product
-	for productID, price := range productWeights {
-		var product dto.Product
-		if err := db.First(&product, productID).Error; err != nil {
-			continue
-		}
-		product.Price = price
-		products = append(products, product)
-	}
-	sort.Slice(products, func(i, j int) bool {
-		return products[i].Price > products[j].Price
+	return c.JSON(dto.Response{
+		Data: products,
 	})
-
-	// Return top 5 products
-	if len(products) > 5 {
-		products = products[:5]
-	}
-
-	// Return response
-	return c.JSON(products)
 }
 
-*/
+func (h *ProductHandler) getProduct(c *fiber.Ctx) error {
+
+	// Log the incoming request
+	log.Printf("Received get product request for ID: %v", c.Params("id"))
+
+	// Get product ID from request params
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		// Log the error
+		log.Printf("Error parsing product ID: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid product ID",
+		})
+	}
+
+	product, err := h.productService.FindById(id)
+	if err != nil {
+		// Log the error
+		log.Printf("Error retrieving product: %v", err)
+		if errors.Is(err, services.ErrProductNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": services.ErrProductNotFound.Error(),
+			})
+		}
+		// Log the error
+		log.Printf("Error retrieving product: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	// Log the success message
+	log.Printf("Found product with ID %v", id)
+
+	return c.JSON(dto.Response{
+		Data: product,
+	})
+}
+
+// handle product creation
+func (h *ProductHandler) createProduct(c *fiber.Ctx) error {
+
+	// Log the incoming request
+	log.Println("Received create product request")
+
+	// Parse request body
+	var product dto.Product
+	if err := c.BodyParser(&product); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "invalid request",
+		})
+	}
+
+	// Log the received product
+	log.Printf("Received product: %+v\n", product)
+
+	// Create the product record
+	createdProduct, err := h.productService.Create(product)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.Response{
+			Message: err.Error(),
+		})
+	}
+
+	// Log the created product
+	log.Printf("Created product: %+v\n", createdProduct)
+
+	return c.JSON(dto.Response{
+		Message: "Product created successfully",
+		Data:    createdProduct,
+	})
+}

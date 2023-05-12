@@ -1,78 +1,38 @@
 package dto
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
-// define a product model
-//
-//	type Product struct {
-//		gorm.Model
-//		Name        string  `json:"name"`
-//		Description string  `json:"description"`
-//		Price       float64 `json:"price"`
-//		Category    string  `json:"category"`
-//	}
-// type Product struct {
-// 	ID              uint      `json:"id" gorm:"primaryKey"`
-// 	Name            string    `json:"name"`
-// 	Description     string    `json:"description"`
-// 	Price           float64   `json:"price"`
-// 	CreatedAt       time.Time `json:"created_at"`
-// 	UpdatedAt       time.Time `json:"updated_at"`
-// 	RelatedProducts []Product `json:"related_products,omitempty" gorm:"-"`
-// }
-
-// define a user model
 type User struct {
 	gorm.Model
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	IsAdmin  bool   `json:"is_admin"`
+	Name     string `json:"name" gorm:"not null"`
+	Email    string `json:"email" gorm:"not null"`
+	Password string `json:"password" gorm:"not null"`
+	Role     string `json:"role" gorm:"not null"`
 }
-
-// define a web tracking model
-type Tracking struct {
+type Category struct {
 	gorm.Model
-	UserID    uint   `json:"user_id"`
-	ProductID uint   `json:"product_id"`
-	Action    string `json:"action"`
-}
-
-// define a recommendation model
-type Recommendation struct {
-	ProductID     uint    `json:"product_id"`
-	WeightedScore float64 `json:"weighted_score"`
-}
-
-// type Interaction struct {
-// 	ID         uint   `gorm:"primaryKey"`
-// 	UserID     uint   `gorm:"not null"`
-// 	ProductID  uint   `gorm:"not null"`
-// 	ActionType string `gorm:"not null"`
-// 	CreatedAt  time.Time
-// }
-
-type Interaction struct {
-	gorm.Model
-	UserID      uint
-	ProductID   uint
-	Interaction string
+	Name string `json:"name" gorm:"not null"`
 }
 
 type Product struct {
-	ID          uint      `gorm:"primaryKey"`
-	Name        string    `gorm:"not null"`
-	Description string    `gorm:"not null"`
-	Price       float64   `gorm:"not null"`
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
+	gorm.Model
+	Name         string  `json:"name" gorm:"not null"`
+	Description  string  `json:"description" gorm:"not null"`
+	Price        float64 `json:"price" gorm:"not null"`
+	CategoryID   uint    `json:"categoryID" gorm:"not null"`
+	Interactions uint    `json:"interactions" `
 }
 
-func GetDst() []interface{} {
-	return []interface{}{&Product{}, &User{}, &Tracking{}, &Recommendation{}, &Interaction{}}
+type Interaction struct {
+	gorm.Model
+	UserID     uint `json:"userId"`
+	ProductID  uint `json:"productId"`
+	CategoryID uint `json:"categoryId"`
+}
 
+type Response struct {
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }

@@ -23,7 +23,7 @@ func InitDBConnection() error {
 	}
 
 	// migrate the models to the database
-	db.AutoMigrate(&dto.Product{}, &dto.User{}, &dto.Tracking{}, &dto.Recommendation{}, &dto.Interaction{})
+	db.AutoMigrate(&dto.Product{}, &dto.User{})
 
 	dbCon = db
 	return nil

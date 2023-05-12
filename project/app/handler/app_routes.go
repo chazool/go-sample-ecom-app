@@ -6,15 +6,16 @@ import "github.com/gofiber/fiber/v2"
 func RegisterRoutes(app *fiber.App) {
 
 	productHandler := NewProductHandler()
+	authHandler := NewAuthHandler()
 
 	// register the authentication routes
 	auth := app.Group("/auth")
-	auth.Post("/login", login)
-	auth.Post("/register", register)
+	auth.Post("/login", authHandler.login)
+	auth.Post("/register", authHandler.register)
 
 	// register the product routes
 	product := app.Group("/product")
-	product.Use(authenticationMiddleware) // require authentication for product routes
+	product.Use(authHandler.authenticationMiddleware) // require authentication for product routes
 	product.Post("/", productHandler.createProduct)
 	product.Get("/", productHandler.getProducts)
 	product.Get("/:id", productHandler.getProduct)

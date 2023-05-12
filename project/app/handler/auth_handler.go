@@ -2,132 +2,101 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"sample_app/app/dto"
-	"sample_app/pkg/config/db"
-	"strings"
-	"time"
+	"sample_app/app/services"
 
 	"github.com/gofiber/fiber/v2"
 	///"github.com/golang-jwt/jwt"
-
-	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
-// handle user authentication
-func login(c *fiber.Ctx) error {
+type AuthHandler struct {
+	authService services.AuthService
+}
 
-	var dbcon *gorm.DB = db.GetDBConnection()
-
-	// parse the request body
-	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+func NewAuthHandler() AuthHandler {
+	return AuthHandler{
+		authService: services.NewAuthService(),
 	}
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "invalid request body",
-		})
-	}
-
-	// check if the user exists
-	var user dto.User
-	if err := dbcon.Where("email = ?", req.Email).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "invalid credentials",
-			})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "failed to retrieve user",
-		})
-	}
-
-	// verify the password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "invalid credentials",
-		})
-	}
-
-	// generate a JWT token
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = user.ID
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	tokenString, err := token.SignedString([]byte("secret"))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "failed to generate token",
-		})
-	}
-
-	// send the token in the response
-	return c.JSON(fiber.Map{
-		"token": tokenString,
-	})
 }
 
 // handle user registration
-func register(c *fiber.Ctx) error {
-
-	var dbcon *gorm.DB = db.GetDBConnection()
+func (h *AuthHandler) register(c *fiber.Ctx) error {
 
 	// Parse request body
 	var user dto.User
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "invalid request",
+		return c.Status(fiber.StatusBadRequest).JSON(dto.Response{
+			Message: "invalid request",
 		})
+
 	}
 
-	// Check if user with the same email already exists
-	var existingUser dto.User
-	if err := dbcon.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"message": "user with the same email already exists",
-		})
-	}
-
-	// Hash the password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	token, err := h.authService.Register(user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "failed to hash password",
+		status := fiber.StatusInternalServerError
+		if errors.Is(err, services.ErrUserAlreadyExists) {
+			status = fiber.StatusConflict
+
+		}
+		return c.Status(status).JSON(dto.Response{
+			Message: err.Error(),
 		})
 	}
 
-	// Create the user record
-	user.Password = string(hashedPassword)
-	if err := dbcon.Create(&user).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "failed to create user record",
-		})
-	}
-
-	// Generate JWT token
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = user.ID
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	tokenString, err := token.SignedString([]byte("secret"))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "failed to generate token",
-		})
-	}
-
-	return c.JSON(fiber.Map{
-		"message": "user registered successfully",
-		"token":   tokenString,
+	return c.JSON(dto.Response{
+		Data: token,
 	})
 }
 
+// handle user authentication
+func (h *AuthHandler) login(c *fiber.Ctx) error {
+
+	// parse the request body
+	// var req struct {
+	// 	Email    string `json:"email"`
+	// 	Password string `json:"password"`
+	// }
+
+	var user dto.User
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.Response{
+			Message: "invalid request body",
+		})
+
+	}
+
+	token, err := h.authService.Login(user.Email, user.Password)
+	if err != nil {
+		status := fiber.StatusInternalServerError
+		if errors.Is(err, services.ErrInvalidCredentials) {
+			status = fiber.StatusUnauthorized
+		}
+		return c.Status(status).JSON(dto.Response{
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(dto.Response{
+		Data: token,
+	})
+
+}
+
 // middleware for user authentication
+func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
+
+	user, err := h.authService.ParseToken(c.Get("Authorization"))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(dto.Response{
+			Message: err.Error(),
+		})
+	}
+
+	c.Locals("user", user)
+	return c.Next()
+}
+
+/*
 func authenticationMiddleware(c *fiber.Ctx) error {
 
 	var dbcon *gorm.DB = db.GetDBConnection()
@@ -194,3 +163,4 @@ func authenticationMiddleware(c *fiber.Ctx) error {
 		"message": "invalid token",
 	})
 }
+*/
