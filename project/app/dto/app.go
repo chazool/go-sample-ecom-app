@@ -18,7 +18,7 @@ type Product struct {
 	CategoryID    uint     `json:"categoryID" gorm:"not null"`
 	Category      Category `json:"-"`
 	Interactions  uint     `json:"interactions"`
-	WeightedScore float64  `json:"-"`
+	WeightedScore float64  `json:"-" gorm:"-"`
 }
 
 type Interaction struct {

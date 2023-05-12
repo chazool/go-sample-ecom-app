@@ -184,7 +184,7 @@ func (service *productService) calculateProductWeights(interactions []dto.Intera
 			continue
 		}
 
-		category, err := service.categoryService.FindById(product.ID)
+		category, err := service.categoryService.FindById(product.CategoryID)
 		if err != nil {
 			continue
 		}
