@@ -24,7 +24,6 @@ func NewCategoryHandler() CategoryHandler {
 // handle category retrieval
 func (h *CategoryHandler) getCategories(c *fiber.Ctx) error {
 
-	// Log the incoming request
 	log.Println("Received get all categories request")
 
 	categories, err := h.categoryService.FindAll()
@@ -46,7 +45,6 @@ func (h *CategoryHandler) getCategories(c *fiber.Ctx) error {
 
 func (h *CategoryHandler) getCategory(c *fiber.Ctx) error {
 
-	// Log the incoming request
 	log.Printf("Received get category request for ID: %v", c.Params("id"))
 
 	// Get category ID from request params
@@ -86,7 +84,6 @@ func (h *CategoryHandler) getCategory(c *fiber.Ctx) error {
 // handle category creation
 func (h *CategoryHandler) createCategory(c *fiber.Ctx) error {
 
-	// Log the incoming request
 	log.Println("Received create category request")
 
 	// Parse request body

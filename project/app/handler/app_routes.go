@@ -9,9 +9,12 @@ func RegisterRoutes(app *fiber.App) {
 	productHandler := NewProductHandler()
 	authHandler := NewAuthHandler()
 
+	// login route
+	app.Post("/login", authHandler.login)
+
 	// register the authentication routes
 	auth := app.Group("/auth")
-	app.Post("/login", authHandler.login)
+	auth.Use(authHandler.authenticationMiddleware)
 	auth.Post("/register", authHandler.register)
 
 	// management routes

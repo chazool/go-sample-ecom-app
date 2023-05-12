@@ -22,6 +22,9 @@ func NewAuthHandler() AuthHandler {
 // handle user registration
 func (h *AuthHandler) register(c *fiber.Ctx) error {
 
+	// Get the authenticated user from the context
+	ctxUser := c.Locals("user").(*dto.User)
+
 	// Parse request body
 	var user dto.User
 	if err := c.BodyParser(&user); err != nil {
@@ -31,7 +34,7 @@ func (h *AuthHandler) register(c *fiber.Ctx) error {
 
 	}
 
-	token, err := h.authService.Register(user)
+	token, err := h.authService.Register(user, *ctxUser)
 	if err != nil {
 		status := fiber.StatusInternalServerError
 		if errors.Is(err, services.ErrUserAlreadyExists) {
@@ -77,18 +80,18 @@ func (h *AuthHandler) login(c *fiber.Ctx) error {
 }
 
 // // middleware for user authentication
-// func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
+func (h *AuthHandler) authenticationMiddleware(c *fiber.Ctx) error {
 
-// 	user, err := h.authService.ParseToken(c.Get("Authorization"), services.ReqRegAdmin)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(dto.Response{
-// 			Message: err.Error(),
-// 		})
-// 	}
+	user, err := h.authService.ParseToken(c.Get("Authorization"), services.ReqRegUser)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(dto.Response{
+			Message: err.Error(),
+		})
+	}
 
-// 	c.Locals("user", &user)
-// 	return c.Next()
-// }
+	c.Locals("user", &user)
+	return c.Next()
+}
 
 // middleware for user authentication
 func (h *AuthHandler) searchAuthenticationMiddleware(c *fiber.Ctx) error {

@@ -31,19 +31,20 @@ var (
 type RequestType string
 
 const (
-	ReqSearch   RequestType = "search"
-	ReqCreate   RequestType = "create"
-	ReqRegAdmin RequestType = "reg_admin"
+	ReqSearch  RequestType = "search"
+	ReqCreate  RequestType = "create"
+	ReqRegUser RequestType = "reg_user"
 )
 
 type AuthService interface {
-	Register(user dto.User) (string, error)
+	Register(user, ctxUser dto.User) (string, error)
 	Login(email, password string) (string, error)
 	ParseToken(authHeader string, reqType RequestType) (dto.User, error)
 	hashPassword(password string) (string, error)
 	verifyPassword(userPassword string, reqPassword string) error
 	generateToken(user dto.User) (string, error)
 	verifyToken(token string) (dto.UserRole, error)
+	checkUserRole(creatingRole, userRole dto.Role) error
 }
 
 type authService struct {
@@ -95,10 +96,15 @@ func (service *authService) FindByEmail(email string) (dto.User, error) {
 	return user, nil
 }
 
-func (service *authService) Register(user dto.User) (string, error) {
+func (service *authService) Register(user, ctxUser dto.User) (string, error) {
+
+	err := service.checkUserRole(user.Role, ctxUser.Role)
+	if err != nil {
+		return "", err
+	}
 
 	// Check if user with the same email already exists
-	_, err := service.FindByEmail(user.Email)
+	_, err = service.FindByEmail(user.Email)
 	if err == nil {
 		return "", ErrUserAlreadyExists
 	}
@@ -151,6 +157,10 @@ func (service *authService) ParseToken(authHeader string, requestType RequestTyp
 		}
 	case ReqCreate:
 		if userRole.Role != dto.RoleAdmin {
+			return user, ErrUnauthorizedAuthHeader
+		}
+	case ReqRegUser:
+		if !(userRole.Role == dto.RoleAdmin || userRole.Role == dto.RoleSystem) {
 			return user, ErrUnauthorizedAuthHeader
 		}
 	}
@@ -221,4 +231,20 @@ func (service *authService) verifyToken(reqToken string) (dto.UserRole, error) {
 	}
 
 	return user, ErrInvalidToken
+}
+
+func (service *authService) checkUserRole(creatingRole, userRole dto.Role) error {
+	switch userRole {
+	case dto.RoleAdmin:
+		if !(creatingRole == dto.RoleSystem || creatingRole == dto.RoleAdmin) {
+			return ErrUnauthorizedAuthHeader
+		}
+	case dto.RoleSystem:
+		if creatingRole != dto.RoleUser {
+			return ErrUnauthorizedAuthHeader
+		}
+	default:
+		return ErrUnauthorizedAuthHeader
+	}
+	return nil
 }
