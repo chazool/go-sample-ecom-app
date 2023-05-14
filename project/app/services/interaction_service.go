@@ -27,33 +27,39 @@ func NewInteractionService() InteractionService {
 }
 
 func (service *interactionService) GetRecentInteractions(user, limit uint) ([]dto.Interaction, error) {
+	log.Printf("Starting GetRecentInteractions function for user %d with limit %d", user, limit)
+	defer log.Println("Ending GetRecentInteractions function")
 
-	log.Printf("Retrieving interaction with user %d\n", user)
-
-	// Retrieve interaction from the database with given user id
+	log.Printf("Retrieving interactions for user %d\n", user)
+	// Retrieve interactions from the database with given user id and limit
 	interactions, err := service.interactionRepo.RecentInteractions(user, limit)
 	if err != nil {
 		if errors.Is(err, repository.ErrRecordNotFound) {
+			log.Printf("No interactions found for user %d: %v", user, err)
 			return interactions, ErrInteractionsNotFound
 		}
+		log.Printf("Failed to retrieve interactions for user %d: %v", user, err)
 		return interactions, err
 	}
 
-	log.Printf("Retrieved interaction with user %d: %+v\n", user, interactions)
-
+	log.Printf("Retrieved %d interactions for user %d: %+v\n", len(interactions), user, interactions)
 	return interactions, nil
 }
 
 func (service *interactionService) Create(interaction dto.Interaction) (dto.Interaction, error) {
+	// Log function start
+	log.Printf("Starting Create function for interaction: %+v", interaction)
+	defer log.Printf("Ending Create function for interaction: %+v", interaction)
 
-	log.Printf("Creating interaction: %+v\n", interaction)
-
-	product, err := service.interactionRepo.Create(interaction)
+	// Create interaction in the database
+	createdInteraction, err := service.interactionRepo.Create(interaction)
 	if err != nil {
-		return product, ErrFailToCreateProduct
+		log.Printf("Failed to create interaction: %+v, err: %v", interaction, err)
+		return createdInteraction, ErrFailToCreateProduct
 	}
 
-	log.Printf("Created interaction with ID %d\n", product.ID)
+	// Log successful creation of interaction
+	log.Printf("Created interaction with ID %d", createdInteraction.ID)
 
-	return product, nil
+	return createdInteraction, nil
 }

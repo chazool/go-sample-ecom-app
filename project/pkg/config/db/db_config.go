@@ -13,6 +13,10 @@ func GetDBConnection() *gorm.DB {
 	return dbCon
 }
 
+func SetDBConnection(db *gorm.DB) {
+	dbCon = db
+}
+
 // create a new connection to the database
 func InitDBConnection() error {
 	dsn := "host=localhost user=postgres password=postgres dbname=sample_app port=5432 sslmode=disable"

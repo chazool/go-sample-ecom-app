@@ -206,22 +206,33 @@ func (service *productService) calculateProductWeights(interactions []dto.Intera
 
 func (service *productService) getTopProducts(productWeights map[uint]float64, returnCount int) ([]dto.Product, error) {
 
+	log.Println("Starting getTopProducts function")
+	defer log.Println("Ending getTopProducts function")
+
 	var products []dto.Product
 	for productID, score := range productWeights {
 
+		log.Printf("Retrieving product with ID %d\n", productID)
 		product, err := service.findById(productID)
 		if err != nil {
+			log.Printf("Failed to retrieve product with ID %d: %v", productID, err)
 			continue
 		}
 
+		log.Printf("Retrieved product with ID %d: %+v\n", productID, product)
 		product.WeightedScore = score
 		products = append(products, product)
 	}
+
+	log.Printf("Sorting %d products\n", len(products))
 	sort.Slice(products, func(i, j int) bool {
 		return products[i].WeightedScore > products[j].WeightedScore
 	})
+
 	if len(products) > returnCount {
+		log.Printf("Limiting products to %d\n", returnCount)
 		products = products[:returnCount]
 	}
+
 	return products, nil
 }

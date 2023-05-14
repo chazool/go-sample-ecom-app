@@ -33,10 +33,10 @@ type Interaction struct {
 
 type User struct {
 	gorm.Model
-	Name     string    `json:"name" gorm:"not null"`
-	Email    string    `json:"email" gorm:"not null"`
-	Password string    `json:"password" gorm:"not null"`
-	Role     Role      `json:"role" gorm:"not null"`
+	Name     string `json:"name" gorm:"not null"`
+	Email    string `json:"email" gorm:"not null"`
+	Password string `json:"password" gorm:"not null"`
+	Role     Role   `json:"role" gorm:"not null"`
 	Products []Product `json:"-" gorm:"many2many:interactions;"`
 }
 
