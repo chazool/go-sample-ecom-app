@@ -2,8 +2,7 @@ name: Build and Push eCom App Image to GCP
 
 on:
   push:
-    branches:
-      - main 
+    branches: [ "main" ]
 
 env:
   IMAGE_NAME: test-app
