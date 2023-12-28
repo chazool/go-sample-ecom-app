@@ -8,7 +8,7 @@ env:
   IMAGE_NAME: test-app
   IMAGE_TAG: 1.0
  # DOCKER_HUB_USER: $DOCKER_HUB_USER_NAME
-  DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+  #DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
 jobs:
   build-push-docker-hub:
