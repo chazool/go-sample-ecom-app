@@ -24,7 +24,8 @@ jobs:
           docker build -t $IMAGE_NAME:$IMAGE_TAG .
           echo "completed Docker building...."
           docker images
+
           docker image tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_HUB_USER/$IMAGE_NAME:$IMAGE_TAG
           docker images
           echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin            
-          docker push chazool/app
+          docker push $DOCKER_HUB_USER/$IMAGE_NAME:$IMAGE_TAG
