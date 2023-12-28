@@ -18,6 +18,8 @@ WORKDIR /app
 
 COPY ./project/* .
 
+RUN ls
+
 RUN go mod tidy
 
 RUN go build  -a project/cmd/main.go
