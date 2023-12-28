@@ -16,7 +16,7 @@ RUN update-ca-certificates
 
 WORKDIR /app
 
-COPY . .
+COPY ./project/* .
 
 RUN go mod tidy
 
