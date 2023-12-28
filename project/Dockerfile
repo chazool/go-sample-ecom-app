@@ -20,7 +20,7 @@ COPY ./project/* .
 
 RUN go mod tidy
 
-RUN go build  -a cmd/main.go
+RUN go build  -a project/cmd/main.go
 
 EXPOSE 8181
 
