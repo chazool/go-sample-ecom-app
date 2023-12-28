@@ -19,7 +19,8 @@ jobs:
     - name: Build the Docker image
       run: |
           echo "Start Docker building...."
-          docker build -t $IMAGE_NAME:$IMAGE_TAG --file project/Dockerfile .
+          cd project
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
           echo "completed Docker building...."
           docker images
           docker image tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_HUB_USER/$IMAGE_NAME:$IMAGE_TAG
